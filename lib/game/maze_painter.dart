@@ -120,6 +120,34 @@ void drawItem(Canvas canvas, ItemShape shape, Offset c, double s, Color color) {
   }
 }
 
+/// Menggambar Kuna si kunang-kunang (dipakai di game dan di menu).
+void drawKuna(Canvas canvas, Offset c, double cs, double time) {
+  canvas.drawCircle(
+    c,
+    cs * 0.3,
+    Paint()
+      ..color = const Color(0x66FFEE58)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, cs * 0.12),
+  );
+  final flap = 0.6 + 0.4 * sin(time * 25).abs();
+  final wing = Paint()..color = const Color(0xAAFFFFFF);
+  canvas.drawOval(
+      Rect.fromCenter(
+          center: c.translate(-cs * 0.07, -cs * 0.07),
+          width: cs * 0.12 * flap,
+          height: cs * 0.18),
+      wing);
+  canvas.drawOval(
+      Rect.fromCenter(
+          center: c.translate(cs * 0.07, -cs * 0.07),
+          width: cs * 0.12 * flap,
+          height: cs * 0.18),
+      wing);
+  canvas.drawCircle(c, cs * 0.09, Paint()..color = const Color(0xFFFFEB3B));
+  canvas.drawCircle(
+      c.translate(0, cs * 0.04), cs * 0.05, Paint()..color = const Color(0xFFFFFFFF));
+}
+
 class MazePainter extends CustomPainter {
   MazePainter({
     required this.maze,
@@ -247,11 +275,12 @@ class MazePainter extends CustomPainter {
     drawBall(canvas, pc, cs * 0.3, playerColor, facing: facing);
 
     // Kuna si kunang-kunang.
-    _drawKuna(
+    drawKuna(
       canvas,
       pc.translate(cs * (0.5 + 0.12 * cos(time * 2)),
           -cs * (0.5 + 0.1 * sin(time * 3))),
       cs,
+      time,
     );
   }
 
@@ -301,33 +330,6 @@ class MazePainter extends CustomPainter {
       canvas.drawCircle(c.translate(cs * 0.14, cs * 0.04), cs * 0.03,
           Paint()..color = _outline);
     }
-  }
-
-  void _drawKuna(Canvas canvas, Offset c, double cs) {
-    canvas.drawCircle(
-      c,
-      cs * 0.3,
-      Paint()
-        ..color = const Color(0x66FFEE58)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, cs * 0.12),
-    );
-    final flap = 0.6 + 0.4 * sin(time * 25).abs();
-    final wing = Paint()..color = const Color(0xAAFFFFFF);
-    canvas.drawOval(
-        Rect.fromCenter(
-            center: c.translate(-cs * 0.07, -cs * 0.07),
-            width: cs * 0.12 * flap,
-            height: cs * 0.18),
-        wing);
-    canvas.drawOval(
-        Rect.fromCenter(
-            center: c.translate(cs * 0.07, -cs * 0.07),
-            width: cs * 0.12 * flap,
-            height: cs * 0.18),
-        wing);
-    canvas.drawCircle(c, cs * 0.09, Paint()..color = const Color(0xFFFFEB3B));
-    canvas.drawCircle(
-        c.translate(0, cs * 0.04), cs * 0.05, Paint()..color = const Color(0xFFFFFFFF));
   }
 
   @override

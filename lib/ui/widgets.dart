@@ -1,8 +1,71 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../game/maze_painter.dart';
+
+/// Kuna si kunang-kunang, melayang-layang kecil seolah mengajak bermain.
+/// Dipakai sebagai hiasan di menu, biasanya di samping teks ajakan.
+class Firefly extends StatefulWidget {
+  const Firefly({super.key, this.size = 72});
+
+  final double size;
+
+  @override
+  State<Firefly> createState() => _FireflyState();
+}
+
+class _FireflyState extends State<Firefly> with SingleTickerProviderStateMixin {
+  late final Ticker _ticker;
+  Duration _last = Duration.zero;
+  double _time = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = createTicker((elapsed) {
+      final dt = (elapsed - _last).inMicroseconds / 1e6;
+      _last = elapsed;
+      setState(() => _time += dt);
+    })..start();
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: CustomPaint(
+        size: Size.square(widget.size),
+        painter: _FireflyPainter(time: _time, size: widget.size),
+      ),
+    );
+  }
+}
+
+class _FireflyPainter extends CustomPainter {
+  _FireflyPainter({required this.time, required this.size});
+
+  final double time;
+  final double size;
+
+  @override
+  void paint(Canvas canvas, Size canvasSize) {
+    final c = canvasSize.center(Offset.zero).translate(
+          sin(time * 0.9) * size * 0.12,
+          cos(time * 1.3) * size * 0.1,
+        );
+    drawKuna(canvas, c, size, time);
+  }
+
+  @override
+  bool shouldRepaint(covariant _FireflyPainter old) => true;
+}
 
 /// Latar belakang gradasi malam yang perlahan bergeser warna & arah,
 /// dipakai di layar menu (profil, pilih stage) agar terasa lebih hidup.

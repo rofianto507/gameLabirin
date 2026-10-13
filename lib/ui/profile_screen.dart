@@ -27,9 +27,16 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Siapa yang mau main?',
-                style: TextStyle(fontSize: 26, color: Colors.white),
+              const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Siapa yang mau main?',
+                    style: TextStyle(fontSize: 26, color: Colors.white),
+                  ),
+                  SizedBox(width: 8),
+                  Firefly(size: 56),
+                ],
               ),
               const SizedBox(height: 32),
               Row(
