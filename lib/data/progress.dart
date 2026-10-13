@@ -40,4 +40,27 @@ class Progress {
     }
     return result;
   }
+
+  static const _migrationKey = 'progress_reset_for_stage_lock_v1';
+
+  /// Hapus semua bintang tersimpan (semua profil), sekali saja. Dipanggil
+  /// saat app mulai, karena progres lama (dikumpulkan saat semua stage masih
+  /// terbuka bebas) bisa jadi tidak berurutan dan membingungkan aturan
+  /// penguncian stage yang baru.
+  static Future<void> resetOnceForStageLock() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      if (p.getBool(_migrationKey) == true) return;
+      for (final profile in profiles) {
+        for (var w = 0; w < worlds.length; w++) {
+          for (var s = 1; s <= stagesPerWorld; s++) {
+            await p.remove(_key(profile.id, w, s));
+          }
+        }
+      }
+      await p.setBool(_migrationKey, true);
+    } catch (_) {
+      // Abaikan: kalau gagal, progres lama tetap ada tapi game tetap jalan.
+    }
+  }
 }

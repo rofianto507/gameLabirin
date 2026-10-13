@@ -7,7 +7,8 @@ import '../data/route_observer.dart';
 import '../game/game_screen.dart';
 import 'widgets.dart';
 
-/// Pilih dunia dan stage. Semua stage terbuka (tidak ada penguncian).
+/// Pilih dunia dan stage. Stage harus diselesaikan berurutan: lihat
+/// `isStageUnlocked` di `data/models.dart`.
 class StageSelectScreen extends StatefulWidget {
   const StageSelectScreen({super.key, required this.profile});
 
@@ -69,6 +70,15 @@ class _StageSelectScreenState extends State<StageSelectScreen> with RouteAware {
           worldIndex: world,
           stage: stage,
         ),
+      ),
+    );
+  }
+
+  void _showLockedHint() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Selesaikan dulu stage sebelumnya, ya!'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -146,24 +156,39 @@ class _StageSelectScreenState extends State<StageSelectScreen> with RouteAware {
           ),
           const SizedBox(width: 20),
           for (var s = 1; s <= stagesPerWorld; s++) ...[
-            TvButton(
-              autofocus: w == 0 && s == 1,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              onPressed: () => _play(w, s),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('$s',
-                      style: const TextStyle(
-                          fontSize: 30, fontWeight: FontWeight.bold)),
-                  StarRow(count: _stars['${w}_$s'] ?? 0, size: 18),
-                ],
-              ),
-            ),
+            _stageButton(w, s),
             const SizedBox(width: 14),
           ],
         ],
       ),
+    );
+  }
+
+  Widget _stageButton(int w, int s) {
+    final unlocked = isStageUnlocked(_stars, w, s);
+    return TvButton(
+      autofocus: w == 0 && s == 1,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      onPressed: unlocked ? () => _play(w, s) : _showLockedHint,
+      child: unlocked
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('$s',
+                    style: const TextStyle(
+                        fontSize: 30, fontWeight: FontWeight.bold)),
+                StarRow(count: _stars['${w}_$s'] ?? 0, size: 18),
+              ],
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.lock_rounded, size: 26, color: Colors.white54),
+                Text('$s',
+                    style:
+                        const TextStyle(fontSize: 18, color: Colors.white38)),
+              ],
+            ),
     );
   }
 }

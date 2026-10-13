@@ -14,8 +14,9 @@ kepingan bintang itu.
 
 ## Fitur saat ini
 
-- Pilih profil pemain (bergantian), lalu pilih dunia & stage — semua stage terbuka, tanpa
-  penguncian maupun hukuman kalau gagal.
+- Pilih profil pemain (bergantian), lalu pilih dunia & stage. Stage harus diselesaikan
+  berurutan — stage/dunia berikutnya terkunci (ikon gembok) sampai yang sebelumnya tamat —
+  tapi tanpa hukuman kalau gagal di tengah jalan (bisa coba lagi kapan saja).
 - Labirin dibuat acak setiap main (recursive backtracker + beberapa jalan pintas), dengan
   item wajib yang harus dikumpulkan sebelum pintu keluar terbuka, dan bintang bonus
   tersembunyi di jalan buntu.

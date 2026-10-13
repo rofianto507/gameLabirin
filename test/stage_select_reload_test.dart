@@ -37,9 +37,10 @@ void main() {
     ));
     await _settle(tester);
 
-    // StarRow pertama & kedua = stage 1 & 2 dunia pertama (Hutan Pelangi).
+    // Hanya stage 1 dunia pertama yang terbuka di awal; sisanya masih
+    // terkunci (ikon gembok, bukan StarRow) sampai prasyaratnya selesai.
+    expect(find.byType(StarRow), findsOneWidget);
     expect(_starsAt(tester, 0), 0);
-    expect(_starsAt(tester, 1), 0);
 
     final navigator = tester.state<NavigatorState>(find.byType(Navigator));
 
@@ -61,9 +62,14 @@ void main() {
     await _settle(tester);
 
     // Keduanya harus ter-update, bukan cuma stage yang pertama dimainkan.
+    // Stage 3 juga harus ikut terbuka (StarRow ketiga muncul) karena
+    // prasyaratnya (stage 2) baru saja selesai.
+    expect(find.byType(StarRow), findsNWidgets(3));
     expect(_starsAt(tester, 0), 2, reason: 'bintang stage 1 harus termuat');
     expect(_starsAt(tester, 1), 3,
         reason:
             'bintang stage 2 harus ikut termuat walau dicapai lewat pushReplacement');
+    expect(_starsAt(tester, 2), 0,
+        reason: 'stage 3 baru terbuka, belum pernah dimainkan');
   });
 }

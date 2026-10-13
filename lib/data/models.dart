@@ -108,3 +108,19 @@ int mazeRows(int stage, {bool easy = false}) {
 
 /// Jumlah item wajib: 2,2,3,3,4.
 int itemCountFor(int stage) => 2 + (stage - 1) ~/ 2;
+
+/// Stage harus diselesaikan berurutan: stage pertama dunia pertama selalu
+/// terbuka; stage berikutnya terbuka setelah stage sebelumnya (di dunia yang
+/// sama) dapat bintang; dunia baru terbuka setelah seluruh dunia sebelumnya
+/// tamat. [stars] adalah peta kunci `'dunia_stage'` -> jumlah bintang,
+/// seperti hasil `Progress.all`.
+bool isStageUnlocked(Map<String, int> stars, int world, int stage) {
+  if (world == 0 && stage == 1) return true;
+  if (stage > 1) {
+    return (stars['${world}_${stage - 1}'] ?? 0) > 0;
+  }
+  for (var s = 1; s <= stagesPerWorld; s++) {
+    if ((stars['${world - 1}_$s'] ?? 0) <= 0) return false;
+  }
+  return true;
+}
