@@ -24,7 +24,7 @@ const List<PlayerProfile> profiles = [
       id: 'razkahn', name: 'Razkahn', age: 5, color: Color(0xFFE53935)),
 ];
 
-enum ItemShape { fruit, crystal, feather }
+enum ItemShape { egg, crystal, feather }
 
 class GameWorld {
   const GameWorld({
@@ -58,14 +58,14 @@ const List<GameWorld> worlds = [
   GameWorld(
     id: 'hutan',
     name: 'Hutan Pelangi',
-    intro: 'Anak burung kehilangan telurnya. Ayo kumpulkan buahnya!',
-    itemName: 'buah',
+    intro: 'Anak burung kehilangan telurnya. Ayo kita cari dan kumpulkan!',
+    itemName: 'telur',
     bg: Color(0xFF8BD17C),
     floor: Color(0xFFE3F6CF),
     wall: Color(0xFF2E7D32),
     accent: Color(0xFFFFF176),
-    itemColor: Color(0xFFE53935),
-    shape: ItemShape.fruit,
+    itemColor: Color(0xFFFFF3E0),
+    shape: ItemShape.egg,
   ),
   GameWorld(
     id: 'gua',

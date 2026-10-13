@@ -38,7 +38,7 @@ kepingan bintang itu.
 ### Belum ada (rencana berikutnya)
 
 - Rekaman suara Kuna (skrip sudah disiapkan, lihat `docs/skrip_suara_kuna.md`).
-- Mekanik khas tiap dunia (semak/buah, kristal & cahaya, awan hilang-muncul).
+- Mekanik khas tiap dunia (semak/telur, kristal & cahaya, awan hilang-muncul).
 - Karakter dari foto asli (saat ini masih karakter bola berwarna, lihat
   `docs/panduan_desain_karakter.md`).
 - Mode bermain berdua secara bersamaan (saat ini bergantian).

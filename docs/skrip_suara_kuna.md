@@ -29,7 +29,7 @@ Format berkas: `KODE.m4a` (contoh `A01.m4a`). Beri jeda 1 detik sebelum dan sesu
 | Kode | Kalimat |
 |---|---|
 | C01 | "Selamat datang di Hutan Pelangi! Dengar, ada yang menangis. Itu anak burung. Telurnya hilang. Yuk, kita cari!" |
-| C02 | "Semaknya menghalangi jalan. Kumpulkan buah, nanti semaknya mau minggir." |
+| C02 | "Semaknya menghalangi jalan. Kumpulkan telurnya, nanti semaknya mau minggir." |
 | C03 | "Wah, Gua Kristal! Di sini agak gelap. Tapi lihat, kristalnya bersinar!" |
 | C04 | "Ada kelelawar kecil yang takut gelap. Ayo kita temani dia." |
 | C05 | "Arahkan cahaya ke cermin, supaya pintunya terbuka." |
@@ -56,7 +56,7 @@ Format berkas: `KODE.m4a` (contoh `A01.m4a`). Beri jeda 1 detik sebelum dan sesu
 "satu", "dua", "tiga", "empat", "lima" ... "sepuluh" (terpisah), plus "Semuanya sudah terkumpul!"
 
 ## G. Nama benda (kosakata)
-"buah", "telur", "kristal", "bulu burung", "bintang"
+"telur", "kristal", "bulu burung", "bintang"
 
 ## H. Selesai
 | Kode | Kalimat |

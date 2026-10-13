@@ -84,7 +84,7 @@ Path starPath(Offset c, double r) {
   return p;
 }
 
-/// Menggambar item sesuai bentuk dunia (buah / kristal / bulu).
+/// Menggambar item sesuai bentuk dunia (telur / kristal / bulu).
 void drawItem(Canvas canvas, ItemShape shape, Offset c, double s, Color color) {
   final fill = Paint()..color = color;
   final line = Paint()
@@ -93,17 +93,25 @@ void drawItem(Canvas canvas, ItemShape shape, Offset c, double s, Color color) {
     ..strokeCap = StrokeCap.round
     ..color = _outline;
   switch (shape) {
-    case ItemShape.fruit:
-      canvas.drawCircle(c, s * 0.2, fill);
-      canvas.drawCircle(c, s * 0.2, line);
-      canvas.drawOval(
-        Rect.fromCenter(
-            center: c.translate(s * 0.08, -s * 0.24),
-            width: s * 0.2,
-            height: s * 0.1),
-        Paint()..color = const Color(0xFF43A047),
-      );
-      canvas.drawCircle(c.translate(-s * 0.08, -s * 0.07), s * 0.04,
+    case ItemShape.egg:
+      final egg = Path()
+        ..moveTo(c.dx, c.dy - s * 0.26)
+        ..cubicTo(c.dx + s * 0.17, c.dy - s * 0.22, c.dx + s * 0.19,
+            c.dy + s * 0.05, c.dx + s * 0.14, c.dy + s * 0.2)
+        ..cubicTo(c.dx + s * 0.08, c.dy + s * 0.3, c.dx - s * 0.08,
+            c.dy + s * 0.3, c.dx - s * 0.14, c.dy + s * 0.2)
+        ..cubicTo(c.dx - s * 0.19, c.dy + s * 0.05, c.dx - s * 0.17,
+            c.dy - s * 0.22, c.dx, c.dy - s * 0.26)
+        ..close();
+      canvas.drawPath(egg, fill);
+      canvas.drawPath(egg, line);
+      // Bintik-bintik khas telur burung.
+      final speckle = Paint()..color = const Color(0x552E7D32);
+      canvas.drawCircle(c.translate(-s * 0.05, -s * 0.05), s * 0.025, speckle);
+      canvas.drawCircle(c.translate(s * 0.07, s * 0.05), s * 0.02, speckle);
+      canvas.drawCircle(c.translate(-s * 0.02, s * 0.13), s * 0.018, speckle);
+      canvas.drawCircle(c.translate(s * 0.08, -s * 0.1), s * 0.02, speckle);
+      canvas.drawCircle(c.translate(-s * 0.08, -s * 0.1), s * 0.04,
           Paint()..color = const Color(0x88FFFFFF));
       break;
     case ItemShape.crystal:
