@@ -29,12 +29,15 @@ class SfxPlayer {
   SfxPlayer._();
 
   static Future<void> play(Sfx sfx) async {
-    try {
-      final player = AudioPlayer();
-      unawaited(player.onPlayerComplete.first.then((_) => player.dispose()));
-      await player.play(AssetSource(sfx.asset));
-    } catch (_) {
-      // Abaikan: tanpa efek suara, permainan tetap jalan.
-    }
+    // runZonedGuarded, bukan cuma try/catch: lihat catatan di BackgroundMusic.
+    await runZonedGuarded(() async {
+      try {
+        final player = AudioPlayer();
+        unawaited(player.onPlayerComplete.first.then((_) => player.dispose()));
+        await player.play(AssetSource(sfx.asset));
+      } catch (_) {
+        // Abaikan: tanpa efek suara, permainan tetap jalan.
+      }
+    }, (error, stack) {});
   }
 }

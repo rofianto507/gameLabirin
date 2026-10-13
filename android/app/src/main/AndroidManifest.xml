@@ -2,9 +2,10 @@
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <application
-        android:label="kuna_labirin"
+        android:label="Kuna dan Bintang Jatuh"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:banner="@drawable/banner">
         <activity
             android:name=".MainActivity"
             android:exported="true"

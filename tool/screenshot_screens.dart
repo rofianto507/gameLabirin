@@ -7,6 +7,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuna_labirin/data/models.dart';
 import 'package:kuna_labirin/ui/profile_screen.dart';
@@ -53,11 +54,36 @@ Future<void> _shoot(
   }
 }
 
+/// ProfileScreen memicu BackgroundMusic lewat initState. Tiruan ini menutupi
+/// channel ber-nama-tetap milik paket audioplayers. CATATAN: paket itu juga
+/// membuka satu event channel per instance AudioPlayer dengan nama ber-UUID
+/// acak (tidak bisa ditiru di muka) saat .play() dipanggil — jadi screenshot
+/// ProfileScreen di lingkungan tes murni (tanpa plugin audio asli) kadang
+/// masih bisa gagal karena itu. StageSelectScreen aman (tidak mendaftarkan
+/// routeObserver di sini, jadi BackgroundMusic tidak ikut terpicu).
+void _mockAudioplayersChannels() {
+  for (final name in [
+    'xyz.luan/audioplayers',
+    'xyz.luan/audioplayers.global',
+    'xyz.luan/audioplayers.global/events',
+  ]) {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(MethodChannel(name), (call) async => null);
+  }
+}
+
 void main() {
-  testWidgets('screenshot layar utama & pilih stage di beberapa resolusi',
-      (tester) async {
+  // Dua testWidgets terpisah (bukan satu) supaya kegagalan di satu layar
+  // tidak ikut menggagalkan screenshot layar lain.
+  testWidgets('screenshot layar utama di beberapa resolusi', (tester) async {
+    _mockAudioplayersChannels();
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await _shoot(tester, screen: const ProfileScreen(), name: 'profile');
+  });
+
+  testWidgets('screenshot layar pilih stage di beberapa resolusi',
+      (tester) async {
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await _shoot(
       tester,
       screen: StageSelectScreen(profile: profiles[0]),

@@ -136,6 +136,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> with RouteAware {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 210,
@@ -157,10 +158,17 @@ class _StageSelectScreenState extends State<StageSelectScreen> with RouteAware {
             ),
           ),
           const SizedBox(width: 20),
-          for (var s = 1; s <= stagesPerWorld; s++) ...[
-            _stageButton(w, s),
-            const SizedBox(width: 14),
-          ],
+          // Wrap (bukan Row biasa) supaya 10 tombol stage per dunia turun ke
+          // baris berikutnya alih-alih meluap ke samping di layar TV.
+          Expanded(
+            child: Wrap(
+              spacing: 14,
+              runSpacing: 10,
+              children: [
+                for (var s = 1; s <= stagesPerWorld; s++) _stageButton(w, s),
+              ],
+            ),
+          ),
         ],
       ),
     );
