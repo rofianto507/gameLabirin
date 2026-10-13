@@ -5,7 +5,9 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../data/models.dart';
+import '../data/music.dart';
 import '../data/progress.dart';
+import '../data/route_observer.dart';
 import '../maze/maze.dart';
 import '../ui/widgets.dart';
 import 'maze_painter.dart';
@@ -30,7 +32,7 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, RouteAware {
   /// Kecepatan jalan (sel per detik).
   static const double _speed = 5.0;
 
@@ -93,13 +95,28 @@ class _GameScreenState extends State<GameScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _ticker.dispose();
     _focus.dispose();
     _nextFocus.dispose();
     _resumeFocus.dispose();
     super.dispose();
   }
+
+  // Musik diulang dari awal setiap stage ini terlihat (baru dibuka lewat
+  // "Lanjut"/"Main lagi", atau kembali dari layar sebelumnya).
+  @override
+  void didPush() => BackgroundMusic.restart();
+
+  @override
+  void didPopNext() => BackgroundMusic.restart();
 
   void _kunaSay(String text, double seconds) {
     _say = text;

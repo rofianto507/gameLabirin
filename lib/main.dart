@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'data/route_observer.dart';
 import 'ui/profile_screen.dart';
 
 Future<void> main() async {
@@ -32,6 +33,7 @@ class LabirinApp extends StatelessWidget {
         ...WidgetsApp.defaultShortcuts,
         LogicalKeySet(LogicalKeyboardKey.gameButtonA): const ActivateIntent(),
       },
+      navigatorObservers: [routeObserver],
       home: const ProfileScreen(),
     );
   }

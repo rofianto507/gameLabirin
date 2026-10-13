@@ -1,12 +1,39 @@
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
+import '../data/music.dart';
+import '../data/route_observer.dart';
 import 'stage_select_screen.dart';
 import 'widgets.dart';
 
 /// Layar awal: pilih siapa yang main (bergantian).
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  // Musik diulang dari awal setiap layar ini terlihat (baru dibuka / kembali
+  // dari layar lain lewat tombol kembali).
+  @override
+  void didPush() => BackgroundMusic.restart();
+
+  @override
+  void didPopNext() => BackgroundMusic.restart();
 
   @override
   Widget build(BuildContext context) {

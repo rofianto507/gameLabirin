@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
+import '../data/music.dart';
 import '../data/progress.dart';
+import '../data/route_observer.dart';
 import '../game/game_screen.dart';
 import 'widgets.dart';
 
@@ -15,7 +17,7 @@ class StageSelectScreen extends StatefulWidget {
   State<StageSelectScreen> createState() => _StageSelectScreenState();
 }
 
-class _StageSelectScreenState extends State<StageSelectScreen> {
+class _StageSelectScreenState extends State<StageSelectScreen> with RouteAware {
   Map<String, int> _stars = {};
 
   @override
@@ -23,6 +25,26 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
     super.initState();
     _reload();
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  // Musik diulang dari awal setiap layar ini terlihat (baru dibuka / kembali
+  // dari layar game lewat tombol kembali).
+  @override
+  void didPush() => BackgroundMusic.restart();
+
+  @override
+  void didPopNext() => BackgroundMusic.restart();
 
   Future<void> _reload() async {
     final s = await Progress.all(widget.profile.id);
