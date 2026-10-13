@@ -46,14 +46,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
   Widget build(BuildContext context) {
     final p = widget.profile;
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF0D1138), Color(0xFF283593)],
-          ),
-        ),
+      body: DynamicBackground(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 27),
           child: SingleChildScrollView(

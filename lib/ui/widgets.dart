@@ -1,6 +1,66 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../game/maze_painter.dart';
+
+/// Latar belakang gradasi malam yang perlahan bergeser warna & arah,
+/// dipakai di layar menu (profil, pilih stage) agar terasa lebih hidup.
+class DynamicBackground extends StatefulWidget {
+  const DynamicBackground({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<DynamicBackground> createState() => _DynamicBackgroundState();
+}
+
+class _DynamicBackgroundState extends State<DynamicBackground>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 12),
+  )..repeat(reverse: true);
+
+  static const List<Color> _a = [
+    Color(0xFF0D1138),
+    Color(0xFF1A237E),
+    Color(0xFF283593),
+  ];
+  static const List<Color> _b = [
+    Color(0xFF1A0B3D),
+    Color(0xFF3949AB),
+    Color(0xFF5C2E91),
+  ];
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (context, child) {
+        final t = _c.value;
+        final sway = sin(t * pi) * 0.35;
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment(-sway, -1),
+              end: Alignment(sway, 1),
+              colors: [for (final c in _a.indexed) Color.lerp(c.$2, _b[c.$1], t)!],
+            ),
+          ),
+          child: child,
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
 
 /// Tombol yang ramah D-pad: membesar dan berbingkai putih saat difokuskan.
 class TvButton extends StatefulWidget {

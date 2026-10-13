@@ -19,9 +19,9 @@ class PlayerProfile {
 }
 
 const List<PlayerProfile> profiles = [
-  PlayerProfile(id: 'xhaka', name: 'Xhaka', age: 8, color: Color(0xFF1E88E5)),
+  PlayerProfile(id: 'xhaka', name: 'Xhaka', age: 8, color: Color(0xFFFDD835)),
   PlayerProfile(
-      id: 'razkhan', name: 'Razkhan', age: 5, color: Color(0xFFFF8F00)),
+      id: 'razkahn', name: 'Razkahn', age: 5, color: Color(0xFFE53935)),
 ];
 
 enum ItemShape { fruit, crystal, feather }

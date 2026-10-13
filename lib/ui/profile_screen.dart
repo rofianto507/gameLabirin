@@ -11,14 +11,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF0D1138), Color(0xFF283593)],
-          ),
-        ),
+      body: DynamicBackground(
         child: Padding(
           // Margin aman agar tidak terpotong di TV.
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 27),
@@ -82,10 +75,6 @@ class _ProfileCard extends StatelessWidget {
           Text(
             profile.name,
             style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            '${profile.age} tahun',
-            style: const TextStyle(fontSize: 18, color: Colors.white70),
           ),
         ],
       ),

@@ -7,7 +7,7 @@
 Game petualangan labirin 2D untuk **Android TV di rumah**, dimainkan **dua anak secara bergantian**.
 Dipasang pribadi (sideload APK), **bukan** untuk Play Store, jadi tanpa iklan/IAP/kebijakan Families.
 
-- **Pemain:** Xhaka (kakak, 8 th, bola biru `#1E88E5`) dan Razkhan (adik, 5 th, bola oranye `#FF8F00`).
+- **Pemain:** Xhaka (kakak, 8 th, bola kuning `#FDD835`) dan Razkahn (adik, 5 th, bola merah `#E53935`). Umur dipakai internal untuk tingkat kesulitan, tidak ditampilkan di UI.
 - **Target usia:** 5-10 tahun. Bahasa: **Indonesia saja**.
 - **Platform/tool:** Flutter (Dart), tanpa package game engine di v0.1 (CustomPainter + Ticker). `shared_preferences` untuk menyimpan bintang.
 - **Kontrol:** D-pad remote TV dan gamepad (D-pad = tombol panah, tombol A = OK). Tersedia 1 gamepad + 1 remote. Versi awal **bergantian**, bukan bersamaan.
@@ -56,6 +56,7 @@ Stage 1-2 pengenalan, 3-4 lebih besar, 5 penutup (momen spesial). Selesai dunia 
 - Gerak per-sel dengan animasi halus; tahan tombol arah = jalan terus.
 - Layar menang: bintang, tombol Lanjut / Main lagi / Menu (fokus D-pad).
 - **Belum ada:** suara/musik, mekanik khas dunia, gambar karakter foto, mode berdua, cerita penutup, tombol jeda.
+- UI menu (profil, pilih stage) pakai font anak-anak **Fredoka** (`assets/fonts/Fredoka.ttf`, diset lewat `fontFamily` di `ThemeData`) dan latar gradasi malam yang bergeser pelan (`DynamicBackground` di `lib/ui/widgets.dart`).
 
 ## 7. Struktur folder
 ```
@@ -65,6 +66,8 @@ pubspec.yaml
 docs/
   skrip_suara_kuna.md       <- skrip rekaman suara Mama (kode A01..J02)
   panduan_desain_karakter.md
+assets/
+  fonts/Fredoka.ttf          <- font anak-anak (variable font, lisensi OFL.txt di folder sama)
 lib/
   main.dart                 <- app, orientasi landscape, immersive, tombol A gamepad = OK
   data/models.dart          <- PlayerProfile, GameWorld (warna/tema), ukuran labirin per stage
@@ -72,7 +75,7 @@ lib/
   maze/maze.dart            <- MazeData, MazeGenerator, BFS findPath
   game/game_screen.dart     <- logika stage: input, gerak, item, hint, menang
   game/maze_painter.dart    <- menggambar labirin, bola, item, pintu, Kuna
-  ui/profile_screen.dart    <- pilih Xhaka/Razkhan
+  ui/profile_screen.dart    <- pilih Xhaka/Razkahn
   ui/stage_select_screen.dart
   ui/widgets.dart           <- TvButton (fokus D-pad), PlayerBall, StarRow
 ```

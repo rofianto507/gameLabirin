@@ -18,3 +18,14 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Fredoka
+      fonts:
+        - asset: assets/fonts/Fredoka.ttf
+          weight: 400
+        - asset: assets/fonts/Fredoka.ttf
+          weight: 500
+        - asset: assets/fonts/Fredoka.ttf
+          weight: 600
+        - asset: assets/fonts/Fredoka.ttf
+          weight: 700

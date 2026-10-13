@@ -4,7 +4,7 @@ Nada: ceria, hangat, pelan dan jelas, seperti bicara pada anak sendiri.
 Format berkas: `KODE.m4a` (contoh `A01.m4a`). Beri jeda 1 detik sebelum dan sesudah tiap kalimat.
 
 ## Aturan nama
-- Nama **Xhaka** dan **Razkhan** direkam sebagai berkas terpisah (2-3 versi: biasa, semangat, lembut), mis. `NAMA_xhaka_1.m4a`.
+- Nama **Xhaka** dan **Razkahn** direkam sebagai berkas terpisah (2-3 versi: biasa, semangat, lembut), mis. `NAMA_xhaka_1.m4a`.
 - Kalimat bertanda **[NAMA]** direkam **tanpa nama**; aplikasi memutar berkas nama lebih dulu lalu kalimatnya.
   Contoh: [NAMA_xhaka] + H01 "kamu hebat!".
 

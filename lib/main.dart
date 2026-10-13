@@ -25,6 +25,7 @@ class LabirinApp extends StatelessWidget {
         useMaterial3: true,
         colorSchemeSeed: const Color(0xFF3F51B5),
         brightness: Brightness.dark,
+        fontFamily: 'Fredoka',
       ),
       // Tombol A gamepad berfungsi sebagai "OK" (selain Enter/Select remote).
       shortcuts: {
