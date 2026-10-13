@@ -9,8 +9,13 @@ const Color _outline = Color(0xFF263238);
 
 /// Menggambar karakter bola (dipakai di game dan di menu).
 /// [facing] = arah pandang (-1..1) untuk mata.
+/// [blink] = 0 mata terbuka .. 1 mata tertutup.
+/// [smile] = 0 senyum tipis .. 1 senyum lebar (0.5 = ekspresi standar).
 void drawBall(Canvas canvas, Offset c, double r, Color color,
-    {Offset facing = Offset.zero, bool shadow = true}) {
+    {Offset facing = Offset.zero,
+    bool shadow = true,
+    double blink = 0,
+    double smile = 0.5}) {
   if (shadow) {
     canvas.drawOval(
       Rect.fromCenter(
@@ -32,16 +37,27 @@ void drawBall(Canvas canvas, Offset c, double r, Color color,
 
   final white = Paint()..color = Colors.white;
   final dark = Paint()..color = _outline;
+  final blinkClamped = blink < 0 ? 0.0 : (blink > 1 ? 1.0 : blink);
+  final eyeScaleY = 1 - 0.92 * blinkClamped;
   for (final sx in const [-1.0, 1.0]) {
     final e = Offset(c.dx + sx * r * 0.34 + facing.dx * r * 0.08,
         c.dy - r * 0.08 + facing.dy * r * 0.08);
+    canvas.save();
+    canvas.translate(e.dx, e.dy);
+    canvas.scale(1, eyeScaleY);
+    canvas.translate(-e.dx, -e.dy);
     canvas.drawCircle(e, r * 0.23, white);
     canvas.drawCircle(
         e.translate(facing.dx * r * 0.08, facing.dy * r * 0.08), r * 0.11, dark);
+    canvas.restore();
   }
+  final smileClamped = smile < 0 ? 0.0 : (smile > 1 ? 1.0 : smile);
+  final mouthDepth = r * (0.45 + 0.35 * smileClamped);
+  final mouthHalfWidth = r * (0.20 + 0.06 * smileClamped);
   final mouth = Path()
-    ..moveTo(c.dx - r * 0.22, c.dy + r * 0.38)
-    ..quadraticBezierTo(c.dx, c.dy + r * 0.6, c.dx + r * 0.22, c.dy + r * 0.38);
+    ..moveTo(c.dx - mouthHalfWidth, c.dy + r * 0.38)
+    ..quadraticBezierTo(
+        c.dx, c.dy + mouthDepth, c.dx + mouthHalfWidth, c.dy + r * 0.38);
   canvas.drawPath(
     mouth,
     Paint()

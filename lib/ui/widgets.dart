@@ -109,15 +109,23 @@ class _DynamicBackgroundState extends State<DynamicBackground>
       builder: (context, child) {
         final t = _c.value;
         final sway = sin(t * pi) * 0.35;
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment(-sway, -1),
-              end: Alignment(sway, 1),
-              colors: [for (final c in _a.indexed) Color.lerp(c.$2, _b[c.$1], t)!],
+        // SizedBox.expand memaksa latar mengisi penuh ruang yang diberikan
+        // Scaffold, walau tingginya "longgar" (Scaffold.body tidak dipaksa
+        // tinggi penuh) dan kontennya (mis. SingleChildScrollView) lebih
+        // pendek dari layar — tanpa ini gradasi menyusut ikut konten.
+        return SizedBox.expand(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment(-sway, -1),
+                end: Alignment(sway, 1),
+                colors: [
+                  for (final c in _a.indexed) Color.lerp(c.$2, _b[c.$1], t)!
+                ],
+              ),
             ),
+            child: child,
           ),
-          child: child,
         );
       },
       child: widget.child,
@@ -219,6 +227,147 @@ class _BallPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _BallPainter old) => old.color != color;
+}
+
+/// Karakter bola yang "hidup": berkedip, sesekali melirik ke [glanceDirection]
+/// lalu kembali menghadap depan, dan senyumnya berubah-ubah pelan.
+/// Semua waktunya acak per karakter supaya kedua anak tidak bergerak serempak.
+class LivelyPlayerBall extends StatefulWidget {
+  const LivelyPlayerBall({
+    super.key,
+    required this.color,
+    required this.glanceDirection,
+    this.size = 80,
+  });
+
+  final Color color;
+
+  /// 1 = melirik ke kanan, -1 = melirik ke kiri.
+  final double glanceDirection;
+  final double size;
+
+  @override
+  State<LivelyPlayerBall> createState() => _LivelyPlayerBallState();
+}
+
+class _LivelyPlayerBallState extends State<LivelyPlayerBall>
+    with SingleTickerProviderStateMixin {
+  static const double _blinkDur = 0.16;
+  static const double _glanceOut = 0.35;
+  static const double _glanceHold = 0.7;
+  static const double _glanceBack = 0.4;
+  static const double _glanceDur = _glanceOut + _glanceHold + _glanceBack;
+
+  late final Ticker _ticker;
+  final Random _rnd = Random();
+  Duration _last = Duration.zero;
+  double _time = 0;
+
+  double _nextBlinkAt = 0;
+  double _blinkStart = -10;
+
+  double _nextGlanceAt = 0;
+  double _glanceStart = -10;
+
+  double _smile = 0.5;
+  double _smileTarget = 0.5;
+  double _nextSmileAt = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _nextBlinkAt = 1 + _rnd.nextDouble() * 3;
+    _nextGlanceAt = 2 + _rnd.nextDouble() * 4;
+    _nextSmileAt = 1.5 + _rnd.nextDouble() * 2;
+    _ticker = createTicker(_tick)..start();
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
+
+  void _tick(Duration elapsed) {
+    final dt = (elapsed - _last).inMicroseconds / 1e6;
+    _last = elapsed;
+    _time += dt;
+
+    if (_time >= _nextBlinkAt) {
+      _blinkStart = _time;
+      _nextBlinkAt = _time + 2 + _rnd.nextDouble() * 4;
+    }
+    if (_time >= _nextGlanceAt) {
+      _glanceStart = _time;
+      _nextGlanceAt = _time + _glanceDur + 2.5 + _rnd.nextDouble() * 4;
+    }
+    if (_time >= _nextSmileAt) {
+      _smileTarget = 0.25 + _rnd.nextDouble() * 0.7;
+      _nextSmileAt = _time + 1.5 + _rnd.nextDouble() * 2.5;
+    }
+    final smileLerp = dt * 2.5 > 1 ? 1.0 : dt * 2.5;
+    _smile += (_smileTarget - _smile) * smileLerp;
+
+    setState(() {});
+  }
+
+  double get _blink {
+    final t = _time - _blinkStart;
+    if (t < 0 || t > _blinkDur) return 0;
+    final p = t / _blinkDur;
+    return p < 0.5 ? p * 2 : (1 - p) * 2;
+  }
+
+  double get _glance {
+    final t = _time - _glanceStart;
+    if (t < 0 || t > _glanceDur) return 0;
+    if (t < _glanceOut) {
+      return widget.glanceDirection * Curves.easeOut.transform(t / _glanceOut);
+    }
+    if (t < _glanceOut + _glanceHold) return widget.glanceDirection;
+    final p = (t - _glanceOut - _glanceHold) / _glanceBack;
+    return widget.glanceDirection * (1 - Curves.easeIn.transform(p));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size.square(widget.size),
+      painter: _LivelyBallPainter(
+        color: widget.color,
+        blink: _blink,
+        facing: Offset(_glance, 0),
+        smile: _smile,
+      ),
+    );
+  }
+}
+
+class _LivelyBallPainter extends CustomPainter {
+  _LivelyBallPainter({
+    required this.color,
+    required this.blink,
+    required this.facing,
+    required this.smile,
+  });
+
+  final Color color;
+  final double blink;
+  final Offset facing;
+  final double smile;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    drawBall(canvas, size.center(Offset.zero), size.width * 0.38, color,
+        shadow: false, facing: facing, blink: blink, smile: smile);
+  }
+
+  @override
+  bool shouldRepaint(covariant _LivelyBallPainter old) =>
+      old.color != color ||
+      old.blink != blink ||
+      old.facing != facing ||
+      old.smile != smile;
 }
 
 /// Baris bintang (terisi / kosong).

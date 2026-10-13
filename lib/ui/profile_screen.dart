@@ -44,7 +44,13 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   for (var i = 0; i < profiles.length; i++) ...[
                     if (i > 0) const SizedBox(width: 48),
-                    _ProfileCard(profile: profiles[i], autofocus: i == 0),
+                    _ProfileCard(
+                      profile: profiles[i],
+                      autofocus: i == 0,
+                      // Saling melirik ke tengah: kartu kiri menoleh ke
+                      // kanan, kartu kanan menoleh ke kiri.
+                      glanceDirection: i == 0 ? 1 : -1,
+                    ),
                   ],
                 ],
               ),
@@ -57,9 +63,14 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class _ProfileCard extends StatelessWidget {
-  const _ProfileCard({required this.profile, this.autofocus = false});
+  const _ProfileCard({
+    required this.profile,
+    required this.glanceDirection,
+    this.autofocus = false,
+  });
 
   final PlayerProfile profile;
+  final double glanceDirection;
   final bool autofocus;
 
   @override
@@ -77,7 +88,11 @@ class _ProfileCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          PlayerBall(color: profile.color, size: 130),
+          LivelyPlayerBall(
+            color: profile.color,
+            glanceDirection: glanceDirection,
+            size: 130,
+          ),
           const SizedBox(height: 8),
           Text(
             profile.name,
