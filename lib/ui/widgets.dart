@@ -80,11 +80,6 @@ class DynamicBackground extends StatefulWidget {
 
 class _DynamicBackgroundState extends State<DynamicBackground>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 12),
-  )..repeat(reverse: true);
-
   static const List<Color> _a = [
     Color(0xFF0D1138),
     Color(0xFF1A237E),
@@ -96,39 +91,85 @@ class _DynamicBackgroundState extends State<DynamicBackground>
     Color(0xFF5C2E91),
   ];
 
+  // Rentang posisi tiap pita warna, supaya urutannya selalu terjaga
+  // (tidak saling silang) walau tiap pita mengambang naik-turun sendiri.
+  static const List<List<double>> _stopRanges = [
+    [0.00, 0.15],
+    [0.35, 0.65],
+    [0.85, 1.00],
+  ];
+
+  late final Ticker _ticker;
+  final Random _rnd = Random();
+  Duration _last = Duration.zero;
+  double _time = 0;
+  double _colorT = 0;
+
+  late List<double> _stops;
+  late List<double> _stopTargets;
+  late List<double> _nextStopChangeAt;
+
+  @override
+  void initState() {
+    super.initState();
+    _stops = [for (final r in _stopRanges) (r[0] + r[1]) / 2];
+    _stopTargets = List.of(_stops);
+    _nextStopChangeAt = [
+      for (var i = 0; i < _stops.length; i++) 1 + _rnd.nextDouble() * 3
+    ];
+    _ticker = createTicker(_tick)..start();
+  }
+
   @override
   void dispose() {
-    _c.dispose();
+    _ticker.dispose();
     super.dispose();
+  }
+
+  void _tick(Duration elapsed) {
+    final dt = (elapsed - _last).inMicroseconds / 1e6;
+    _last = elapsed;
+    _time += dt;
+
+    for (var i = 0; i < _stops.length; i++) {
+      if (_time >= _nextStopChangeAt[i]) {
+        final range = _stopRanges[i];
+        _stopTargets[i] = range[0] + _rnd.nextDouble() * (range[1] - range[0]);
+        // Jeda acak sebelum pita ini bergerak lagi, supaya tidak serempak.
+        _nextStopChangeAt[i] = _time + 3 + _rnd.nextDouble() * 5;
+      }
+      final ease = dt * 0.35 > 1 ? 1.0 : dt * 0.35;
+      _stops[i] += (_stopTargets[i] - _stops[i]) * ease;
+    }
+
+    // Warna ikut bergeser pelan & terus-menerus (bolak-balik, siklus ~20 detik).
+    _colorT = 0.5 + 0.5 * sin(_time * (2 * pi / 20));
+
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _c,
-      builder: (context, child) {
-        final t = _c.value;
-        final sway = sin(t * pi) * 0.35;
-        // SizedBox.expand memaksa latar mengisi penuh ruang yang diberikan
-        // Scaffold, walau tingginya "longgar" (Scaffold.body tidak dipaksa
-        // tinggi penuh) dan kontennya (mis. SingleChildScrollView) lebih
-        // pendek dari layar — tanpa ini gradasi menyusut ikut konten.
-        return SizedBox.expand(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment(-sway, -1),
-                end: Alignment(sway, 1),
-                colors: [
-                  for (final c in _a.indexed) Color.lerp(c.$2, _b[c.$1], t)!
-                ],
-              ),
-            ),
-            child: child,
+    // SizedBox.expand memaksa latar mengisi penuh ruang yang diberikan
+    // Scaffold, walau tingginya "longgar" (Scaffold.body tidak dipaksa
+    // tinggi penuh) dan kontennya (mis. SingleChildScrollView) lebih
+    // pendek dari layar — tanpa ini gradasi menyusut ikut konten.
+    return SizedBox.expand(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          // Selalu vertikal murni (atas ke bawah), bukan diagonal: hanya
+          // posisi pita warnanya yang bergerak naik-turun secara acak.
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: _stops,
+            colors: [
+              for (final c in _a.indexed) Color.lerp(c.$2, _b[c.$1], _colorT)!
+            ],
           ),
-        );
-      },
-      child: widget.child,
+        ),
+        child: widget.child,
+      ),
     );
   }
 }

@@ -55,8 +55,13 @@ Stage 1-2 pengenalan, 3-4 lebih besar, 5 penutup (momen spesial). Selesai dunia 
 - Anak 5 tahun (`PlayerProfile.easy`) mendapat labirin lebih kecil dan lebih banyak jalan pintas.
 - Gerak per-sel dengan animasi halus; tahan tombol arah = jalan terus.
 - Layar menang: bintang, tombol Lanjut / Main lagi / Menu (fokus D-pad).
-- **Belum ada:** suara/musik, mekanik khas dunia, gambar karakter foto, mode berdua, cerita penutup, tombol jeda.
-- UI menu (profil, pilih stage) pakai font anak-anak **Fredoka** (`assets/fonts/Fredoka.ttf`, diset lewat `fontFamily` di `ThemeData`) dan latar gradasi malam yang bergeser pelan (`DynamicBackground` di `lib/ui/widgets.dart`).
+- Tombol **Kembali** di layar pilih stage (ke layar profil).
+- Tombol **jeda**: Back (remote TV) / Escape / Start (gamepad) saat bermain membuka overlay jeda (bukan langsung keluar), dengan tombol Lanjut / Kembali ke menu (fokus D-pad). Lihat `PopScope` + `_setPaused` di `game_screen.dart`.
+- **Belum ada:** suara/musik, mekanik khas dunia, gambar karakter foto, mode berdua, cerita penutup.
+- UI menu (profil, pilih stage) pakai font anak-anak **Fredoka** (`assets/fonts/Fredoka.ttf`, diset lewat `fontFamily` di `ThemeData`) dan latar gradasi malam yang bergeser pelan (`DynamicBackground` di `lib/ui/widgets.dart`): arah selalu vertikal, posisi pita warnanya mengambang naik-turun acak.
+- Karakter profil (Xhaka/Razkahn) berkedip, melirik acak, dan senyumnya berubah-ubah (`LivelyPlayerBall`).
+- Ikon aplikasi Android dibuat dari karakter Kuna (`tool/generate_icon.dart` + `flutter_launcher_icons`).
+- Ada test otomatis (`flutter test`) untuk navigasi D-pad layar profil dan fitur jeda; alat verifikasi tata letak di beberapa resolusi TV (`tool/screenshot_screens.dart`).
 
 ## 7. Struktur folder
 ```
@@ -90,7 +95,7 @@ Kode ditulis tanpa bisa dikompilasi di sini, jadi **kemungkinan ada galat kecil 
 
 ## 9. Peta jalan (urutan saran)
 1. Kompilasi dan uji di TV; setel kecepatan (`_speed`), ukuran labirin, kontras warna.
-2. Tombol jeda (gamepad Start/menu) + konfirmasi keluar.
+2. ~~Tombol jeda (gamepad Start/menu) + konfirmasi keluar.~~ Selesai.
 3. Suara: efek (ambil item, buka pintu, boing) dan rekaman Kuna sesuai `docs/skrip_suara_kuna.md`
    (paket `audioplayers`; nama berkas `assets/audio/A01.m4a`; nama anak disambung dari berkas terpisah).
    Titik pemanggilan sudah ditandai komentar `// D02`, `// E01` dst. di `game_screen.dart` (`_kunaSay`).
@@ -114,3 +119,6 @@ Kode ditulis tanpa bisa dikompilasi di sini, jadi **kemungkinan ada galat kecil 
 - `MazePainter.shouldRepaint` selalu `true` (animasi tiap frame); cukup ringan untuk labirin maks 16x9.
 - Ukuran labirin: lihat `mazeCols/mazeRows` di `models.dart`. Kolom 6+2*stage, baris 4+stage (anak kecil -2 / -1).
 - `withOpacity` mungkin memberi peringatan deprecated di Flutter terbaru; ganti ke `withValues(alpha: ...)` bila perlu.
+- Jeda (`GameScreen`): `PopScope(canPop: _won, onPopInvokedWithResult: ...)` menangkap tombol Back fisik (hanya `Navigator.maybePop()`/sistem yang kena; `Navigator.pop()` langsung tetap lolos, dipakai tombol "Kembali ke menu"). Saat overlay jeda/menang tampil, labirin di baliknya dibungkus `ExcludeFocus(excluding: _won || _paused, ...)` — tanpa ini navigasi panah di dalam overlay bisa "nyasar" fokus ke labirin yang tersembunyi (area mati, Enter tidak berefek).
+- Scaffold.body punya lebar tetap tapi **tinggi longgar** (boleh lebih pendek dari layar); `DynamicBackground` dibungkus `SizedBox.expand` supaya gradasinya tetap mengisi penuh layar walau konten (mis. `SingleChildScrollView` di `StageSelectScreen`) lebih pendek.
+- Uji resolusi TV tanpa perangkat asli: `tool/screenshot_screens.dart` (jalankan `flutter test tool/screenshot_screens.dart`) merender layar ke PNG di 720p/1366x768/1080p — lebih bisa diandalkan daripada jendela `flutter run -d chrome` yang defaultnya kecil.

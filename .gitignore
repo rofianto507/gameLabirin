@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Tool output / temp files
+.dart_tool/
+.tool/
+tool/
+
+# Project context file
+context.md

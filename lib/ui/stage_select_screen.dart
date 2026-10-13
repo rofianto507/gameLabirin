@@ -55,6 +55,20 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
               children: [
                 Row(
                   children: [
+                    TvButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.arrow_back_rounded, size: 26),
+                          SizedBox(width: 6),
+                          Text('Kembali', style: TextStyle(fontSize: 20)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
                     PlayerBall(color: p.color, size: 56),
                     const SizedBox(width: 12),
                     Text(

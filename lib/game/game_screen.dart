@@ -11,7 +11,8 @@ import '../ui/widgets.dart';
 import 'maze_painter.dart';
 
 /// Satu stage labirin untuk satu pemain.
-/// Kontrol: D-pad / panah / WASD / D-pad gamepad. Tombol Back = kembali.
+/// Kontrol: D-pad / panah / WASD / D-pad gamepad.
+/// Tombol Back (remote) / Escape / Start (gamepad) = jeda + konfirmasi keluar.
 class GameScreen extends StatefulWidget {
   const GameScreen({
     super.key,
@@ -45,6 +46,7 @@ class _GameScreenState extends State<GameScreen>
   late final Ticker _ticker;
   final FocusNode _focus = FocusNode();
   final FocusNode _nextFocus = FocusNode();
+  final FocusNode _resumeFocus = FocusNode();
 
   Duration _last = Duration.zero;
   double _time = 0;
@@ -60,6 +62,7 @@ class _GameScreenState extends State<GameScreen>
   final Set<int> _bonusGot = {};
   double _idle = 0;
   bool _won = false;
+  bool _paused = false;
   int _stars = 0;
 
   String _say = '';
@@ -94,6 +97,7 @@ class _GameScreenState extends State<GameScreen>
     _ticker.dispose();
     _focus.dispose();
     _nextFocus.dispose();
+    _resumeFocus.dispose();
     super.dispose();
   }
 
@@ -102,7 +106,23 @@ class _GameScreenState extends State<GameScreen>
     _sayLeft = seconds;
   }
 
+  void _setPaused(bool paused) {
+    setState(() => _paused = paused);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (paused) {
+        _resumeFocus.requestFocus();
+      } else {
+        _focus.requestFocus();
+      }
+    });
+  }
+
   void _tick(Duration elapsed) {
+    if (_paused) {
+      _last = elapsed; // cegah lonjakan dt saat dilanjutkan
+      return;
+    }
     final raw = (elapsed - _last).inMicroseconds / 1e6;
     final dt = raw > 0.05 ? 0.05 : raw;
     _last = elapsed;
@@ -205,6 +225,13 @@ class _GameScreenState extends State<GameScreen>
 
   KeyEventResult _onKey(FocusNode node, KeyEvent e) {
     if (_won) return KeyEventResult.ignored;
+    if (e is KeyDownEvent &&
+        (e.logicalKey == LogicalKeyboardKey.escape ||
+            e.logicalKey == LogicalKeyboardKey.gameButtonStart)) {
+      _setPaused(!_paused);
+      return KeyEventResult.handled;
+    }
+    if (_paused) return KeyEventResult.ignored;
     final dir = _dirFor(e.logicalKey);
     if (dir == null) return KeyEventResult.ignored;
     if (e is KeyDownEvent) {
@@ -264,50 +291,70 @@ class _GameScreenState extends State<GameScreen>
   @override
   Widget build(BuildContext context) {
     final lastStage = widget.stage >= stagesPerWorld;
-    return Scaffold(
-      backgroundColor: _world.bg,
-      body: Stack(
-        children: [
-          Focus(
-            focusNode: _focus,
-            autofocus: true,
-            onKeyEvent: _onKey,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 27),
-              child: Column(
-                children: [
-                  _hud(),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: CustomPaint(
-                      size: Size.infinite,
-                      painter: MazePainter(
-                        maze: _maze,
-                        world: _world,
-                        pos: _pos,
-                        facing: _facing,
-                        playerColor: widget.profile.color,
-                        got: _got,
-                        bonusGot: _bonusGot,
-                        exitOpen: _allCollected,
-                        trail: _trail(),
-                        time: _time,
+    return PopScope(
+      // Saat sudah menang, overlay menang sudah punya tombol Menu sendiri,
+      // jadi Back boleh langsung keluar. Selain itu, Back membuka jeda dulu
+      // (bukan langsung keluar) supaya progres tidak tiba-tiba hilang.
+      canPop: _won,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _setPaused(!_paused);
+      },
+      child: Scaffold(
+        backgroundColor: _world.bg,
+        body: Stack(
+          children: [
+            // Saat overlay menang/jeda tampil, labirin di baliknya harus
+            // dikeluarkan dari urutan fokus D-pad — tanpa ini, navigasi
+            // panah di dalam overlay bisa "terjebak" lompat ke sini (area
+            // tak terlihat, tidak merespons Enter) alih-alih tetap berputar
+            // di antara tombol-tombol overlay.
+            ExcludeFocus(
+              excluding: _won || _paused,
+              child: Focus(
+                focusNode: _focus,
+                autofocus: true,
+                onKeyEvent: _onKey,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 48, vertical: 27),
+                  child: Column(
+                    children: [
+                      _hud(),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: CustomPaint(
+                          size: Size.infinite,
+                          painter: MazePainter(
+                            maze: _maze,
+                            world: _world,
+                            pos: _pos,
+                            facing: _facing,
+                            playerColor: widget.profile.color,
+                            got: _got,
+                            bonusGot: _bonusGot,
+                            exitOpen: _allCollected,
+                            trail: _trail(),
+                            time: _time,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-          if (_say.isNotEmpty && !_won)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 36,
-              child: Center(child: _bubble(_say)),
-            ),
-          if (_won) _winOverlay(lastStage),
-        ],
+            if (_say.isNotEmpty && !_won && !_paused)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 36,
+                child: Center(child: _bubble(_say)),
+              ),
+            if (_won) _winOverlay(lastStage),
+            if (_paused) _pauseOverlay(),
+          ],
+        ),
       ),
     );
   }
@@ -427,6 +474,55 @@ class _GameScreenState extends State<GameScreen>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                     child: const Text('Menu', style: TextStyle(fontSize: 26)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _pauseOverlay() {
+    return Container(
+      color: Colors.black54,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 28),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A237E),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: const Color(0xFFFFD54F), width: 5),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.pause_circle_filled_rounded,
+                  color: Color(0xFFFFD54F), size: 72),
+              const SizedBox(height: 8),
+              const Text('Main dijeda dulu, ya.',
+                  style:
+                      TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TvButton(
+                    focusNode: _resumeFocus,
+                    onPressed: () => _setPaused(false),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 28, vertical: 14),
+                    child:
+                        const Text('Lanjut', style: TextStyle(fontSize: 26)),
+                  ),
+                  const SizedBox(width: 20),
+                  TvButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 28, vertical: 14),
+                    child: const Text('Kembali ke menu',
+                        style: TextStyle(fontSize: 26)),
                   ),
                 ],
               ),
