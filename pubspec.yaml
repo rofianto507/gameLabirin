@@ -15,6 +15,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
@@ -29,3 +30,9 @@ flutter:
           weight: 600
         - asset: assets/fonts/Fredoka.ttf
           weight: 700
+
+flutter_launcher_icons:
+  android: true
+  image_path: assets/icon/app_icon.png
+  adaptive_icon_background: assets/icon/background.png
+  adaptive_icon_foreground: assets/icon/foreground.png
