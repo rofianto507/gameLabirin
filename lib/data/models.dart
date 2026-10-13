@@ -93,18 +93,16 @@ const List<GameWorld> worlds = [
   ),
 ];
 
-const int stagesPerWorld = 10;
+const int stagesPerWorld = 5;
 
-/// Ukuran labirin per stage (1..10): naik bertahap, mencapai ukuran maksimum
-/// (16x9, sudah teruji ringan) di stage 9-10. Anak kecil dapat sedikit lebih
-/// kecil (kurang lebih setara satu stage di belakang).
+/// Ukuran labirin per stage (1..5). Anak kecil dapat sedikit lebih kecil.
 int mazeCols(int stage, {bool easy = false}) {
-  final v = 6 + stage - (easy ? 1 : 0);
+  final v = 6 + 2 * stage - (easy ? 2 : 0);
   return v < 6 ? 6 : v;
 }
 
 int mazeRows(int stage, {bool easy = false}) {
-  final v = 4 + (stage + 1) ~/ 2 - (easy ? 1 : 0);
+  final v = 4 + stage - (easy ? 1 : 0);
   return v < 4 ? 4 : v;
 }
 
