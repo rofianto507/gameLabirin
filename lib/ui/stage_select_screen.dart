@@ -38,21 +38,31 @@ class _StageSelectScreenState extends State<StageSelectScreen> with RouteAware {
     super.dispose();
   }
 
-  // Musik diulang dari awal setiap layar ini terlihat (baru dibuka / kembali
-  // dari layar game lewat tombol kembali).
+  // Musik diulang dari awal & bintang dimuat ulang setiap layar ini terlihat
+  // lagi (baru dibuka, atau kembali dari layar game lewat tombol kembali).
+  //
+  // Catatan: "Lanjut" di GameScreen berpindah stage lewat pushReplacement,
+  // bukan push baru, jadi beberapa stage bisa dilalui tanpa StageSelectScreen
+  // pernah "di-pop balik"-i di antaranya. Karena itu reload bintang tidak
+  // bisa ditaruh di pemanggil `_play` (hanya jalan sekali, untuk stage
+  // pertama) — harus di didPopNext, yang selalu terpanggil saat layar ini
+  // kembali tampak, tidak peduli berapa banyak stage yang sudah dilalui.
   @override
   void didPush() => BackgroundMusic.restart();
 
   @override
-  void didPopNext() => BackgroundMusic.restart();
+  void didPopNext() {
+    BackgroundMusic.restart();
+    _reload();
+  }
 
   Future<void> _reload() async {
     final s = await Progress.all(widget.profile.id);
     if (mounted) setState(() => _stars = s);
   }
 
-  Future<void> _play(int world, int stage) async {
-    await Navigator.of(context).push(
+  void _play(int world, int stage) {
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => GameScreen(
           profile: widget.profile,
@@ -61,7 +71,6 @@ class _StageSelectScreenState extends State<StageSelectScreen> with RouteAware {
         ),
       ),
     );
-    _reload();
   }
 
   @override
