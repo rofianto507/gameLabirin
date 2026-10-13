@@ -1,0 +1,94 @@
+import 'package:flutter/material.dart';
+
+import '../data/models.dart';
+import 'stage_select_screen.dart';
+import 'widgets.dart';
+
+/// Layar awal: pilih siapa yang main (bergantian).
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF0D1138), Color(0xFF283593)],
+          ),
+        ),
+        child: Padding(
+          // Margin aman agar tidak terpotong di TV.
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 27),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Kuna dan Bintang Jatuh',
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFFFE082),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Siapa yang mau main?',
+                style: TextStyle(fontSize: 26, color: Colors.white),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var i = 0; i < profiles.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 48),
+                    _ProfileCard(profile: profiles[i], autofocus: i == 0),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard({required this.profile, this.autofocus = false});
+
+  final PlayerProfile profile;
+  final bool autofocus;
+
+  @override
+  Widget build(BuildContext context) {
+    return TvButton(
+      autofocus: autofocus,
+      padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 20),
+      onPressed: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => StageSelectScreen(profile: profile),
+          ),
+        );
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          PlayerBall(color: profile.color, size: 130),
+          const SizedBox(height: 8),
+          Text(
+            profile.name,
+            style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            '${profile.age} tahun',
+            style: const TextStyle(fontSize: 18, color: Colors.white70),
+          ),
+        ],
+      ),
+    );
+  }
+}
