@@ -8,6 +8,7 @@ import '../data/models.dart';
 import '../data/music.dart';
 import '../data/progress.dart';
 import '../data/route_observer.dart';
+import '../data/sfx.dart';
 import '../maze/maze.dart';
 import '../ui/widgets.dart';
 import 'maze_painter.dart';
@@ -188,6 +189,7 @@ class _GameScreenState extends State<GameScreen>
     for (var i = 0; i < _maze.items.length; i++) {
       if (!_got.contains(i) && _maze.items[i] == _from) {
         _got.add(i);
+        SfxPlayer.play(Sfx.item);
         final n = _got.length;
         if (_allCollected) {
           _kunaSay('Semuanya sudah terkumpul! Pintu keluar terbuka!', 4); // F, H02
@@ -199,6 +201,7 @@ class _GameScreenState extends State<GameScreen>
     for (var i = 0; i < _maze.bonuses.length; i++) {
       if (!_bonusGot.contains(i) && _maze.bonuses[i] == _from) {
         _bonusGot.add(i);
+        SfxPlayer.play(Sfx.star);
         _kunaSay('Wah, bintang bonus! Hebat!', 3); // E02
       }
     }
@@ -215,6 +218,7 @@ class _GameScreenState extends State<GameScreen>
   void _win() {
     _won = true;
     _held.clear();
+    SfxPlayer.play(Sfx.win);
     _stars = 1 + _bonusGot.length;
     Progress.saveStars(
         widget.profile.id, widget.worldIndex, widget.stage, _stars);

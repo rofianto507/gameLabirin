@@ -31,10 +31,13 @@ kepingan bintang itu.
 - UI ramah anak: font bulat **Fredoka**, latar gradasi malam yang bergerak pelan, dan
   karakter yang "hidup" (berkedip, melirik, senyum berubah-ubah saat idle).
 - Progres bintang tersimpan per profil secara lokal (`shared_preferences`).
+- Musik latar dan efek suara (pilih/klik, dapat item, dapat bintang, menang, stage
+  terkunci) — efek suaranya disintesis sendiri, bukan aset pihak ketiga (lihat
+  `tool/generate_sfx.dart`).
 
 ### Belum ada (rencana berikutnya)
 
-- Efek suara & rekaman suara Kuna (skrip sudah disiapkan, lihat `docs/skrip_suara_kuna.md`).
+- Rekaman suara Kuna (skrip sudah disiapkan, lihat `docs/skrip_suara_kuna.md`).
 - Mekanik khas tiap dunia (semak/buah, kristal & cahaya, awan hilang-muncul).
 - Karakter dari foto asli (saat ini masih karakter bola berwarna, lihat
   `docs/panduan_desain_karakter.md`).
@@ -79,8 +82,9 @@ docs/
 assets/
   fonts/                      - font Fredoka (lisensi OFL)
   icon/                        - gambar sumber ikon aplikasi
+  audio/                       - musik latar & efek suara
 test/                          - widget test (navigasi D-pad, fitur jeda)
-tool/                          - skrip bantu dev (generate ikon, screenshot beberapa resolusi TV)
+tool/                          - skrip bantu dev (generate ikon/efek suara, screenshot beberapa resolusi TV)
 ```
 
 ## Mulai menjalankan
@@ -116,17 +120,23 @@ flutter analyze        # cek statis
 flutter test            # widget test (navigasi D-pad, fitur jeda)
 ```
 
-Folder `tool/` berisi skrip pengembangan sekali-jalan (dijalankan lewat `flutter test`,
-bukan bagian dari aplikasi):
+Folder `tool/` berisi skrip pengembangan sekali-jalan, bukan bagian dari aplikasi:
 
-- `tool/generate_icon.dart` — merender ulang ikon aplikasi dari karakter Kuna.
+- `tool/generate_icon.dart` — merender ulang ikon aplikasi dari karakter Kuna (jalankan
+  lewat `flutter test tool/generate_icon.dart`).
 - `tool/screenshot_screens.dart` — merender layar ke PNG di beberapa resolusi TV (720p,
-  1366×768, 1080p) untuk memeriksa tata letak tanpa perlu perangkat TV asli.
+  1366×768, 1080p) untuk memeriksa tata letak tanpa perlu perangkat TV asli (jalankan
+  lewat `flutter test tool/screenshot_screens.dart`).
+- `tool/generate_sfx.dart` — mensintesis efek suara (nada sinus) ke `assets/audio/sfx_*.wav`,
+  tanpa dependensi aset pihak ketiga (jalankan lewat `dart run tool/generate_sfx.dart`).
 
 ## Kredit & lisensi
 
 - Font **Fredoka** dari [Google Fonts](https://fonts.google.com/specimen/Fredoka), dipakai
   di bawah lisensi [SIL Open Font License](assets/fonts/OFL.txt).
-- Desain karakter, labirin, dan ilustrasi dibuat sendiri.
+- Desain karakter, labirin, dan ilustrasi dibuat sendiri. Efek suara juga disintesis
+  sendiri (lihat `tool/generate_sfx.dart`), jadi bebas lisensi.
+- Musik latar (`assets/audio/bgm.mp3`) dipilih sendiri oleh pembuat proyek; pastikan
+  lisensinya sesuai sebelum dipakai di luar lingkup pribadi.
 - Proyek ini untuk penggunaan pribadi/keluarga, bukan untuk distribusi publik atau Play
   Store.

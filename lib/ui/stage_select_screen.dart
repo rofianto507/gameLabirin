@@ -4,6 +4,7 @@ import '../data/models.dart';
 import '../data/music.dart';
 import '../data/progress.dart';
 import '../data/route_observer.dart';
+import '../data/sfx.dart';
 import '../game/game_screen.dart';
 import 'widgets.dart';
 
@@ -75,6 +76,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> with RouteAware {
   }
 
   void _showLockedHint() {
+    SfxPlayer.play(Sfx.locked);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Selesaikan dulu stage sebelumnya, ya!'),

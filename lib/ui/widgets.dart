@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../data/sfx.dart';
 import '../game/maze_painter.dart';
 
 /// Kuna si kunang-kunang, melayang-layang kecil seolah mengajak bermain.
@@ -211,7 +212,10 @@ class _TvButtonState extends State<TvButton> {
           autofocus: widget.autofocus,
           focusNode: widget.focusNode,
           borderRadius: BorderRadius.circular(24),
-          onTap: widget.onPressed,
+          onTap: () {
+            SfxPlayer.play(Sfx.select);
+            widget.onPressed();
+          },
           onFocusChange: (f) => setState(() => _focused = f),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
