@@ -13,6 +13,8 @@ import '../maze/maze.dart';
 import '../ui/widgets.dart';
 import 'maze_painter.dart';
 
+enum _HolobonState { idle, chasing, returning }
+
 /// Satu stage labirin untuk satu pemain.
 /// Kontrol: D-pad / panah / WASD / D-pad gamepad.
 /// Tombol Back (remote) / Escape / Start (gamepad) = jeda + konfirmasi keluar.
@@ -68,6 +70,33 @@ class _GameScreenState extends State<GameScreen>
   bool _paused = false;
   int _stars = 0;
 
+  /// Sel sebelum sel sekarang (`_from`) — dipakai untuk efek terpental
+  /// mundur satu langkah saat kena Kanapi/Holobon.
+  late Point<int> _prevCell;
+  double _bounceCooldown = 0;
+
+  // Kanapi: penjaga kecil, posisinya murni fungsi dari _time (patroli
+  // berosilasi antara _kanapiHome[i] <-> _kanapiPartner[i]), jadi tidak
+  // perlu state gerak terpisah seperti Holobon.
+  late List<Point<int>> _kanapiHome;
+  late List<Point<int>> _kanapiPartner;
+  bool _kanapiWarned = false;
+
+  // Holobon: boss tunggal, hanya ada di stage penutup dunia. Butuh state
+  // (bukan fungsi murni dari waktu) karena geraknya bergantung posisi
+  // pemain: patroli dekat pintu keluar, lalu mengejar beberapa sel kalau
+  // pemain terlalu dekat, lalu kembali.
+  late bool _hasHolobon;
+  late Point<int> _holobonCell;
+  Point<int>? _holobonMoveTo;
+  double _holobonT = 1;
+  _HolobonState _holobonState = _HolobonState.idle;
+  int _holobonChaseLeft = 0;
+  bool _holobonWarned = false;
+  static const int _holobonChaseMax = 5;
+  static const int _holobonDetectRange = 4;
+  static const double _holobonSpeed = 3.5;
+
   String _say = '';
   double _sayLeft = 0;
 
@@ -88,9 +117,16 @@ class _GameScreenState extends State<GameScreen>
       itemCount: itemCountFor(widget.stage),
       loopChance: easy ? 0.16 : 0.10, // lebih banyak jalan pintas untuk si kecil
       seed: DateTime.now().millisecondsSinceEpoch,
+      kanapiCount: kanapiCountFor(widget.stage),
+      spawnHolobon: widget.stage == stagesPerWorld,
     );
     _from = _maze.start;
     _to = _maze.start;
+    _prevCell = _maze.start;
+    _kanapiHome = _maze.kanapiHome;
+    _kanapiPartner = _maze.kanapiPatrol;
+    _hasHolobon = _maze.holobonA != null;
+    _holobonCell = _maze.holobonA ?? _maze.exit;
     _kunaSay(_world.intro, 6); // suara: lihat docs/skrip_suara_kuna.md (C01, C03, C08)
     _ticker = createTicker(_tick)..start();
   }
@@ -124,6 +160,139 @@ class _GameScreenState extends State<GameScreen>
     _sayLeft = seconds;
   }
 
+  /// Fase patroli 0..1..0 (maju-mundur) dengan easing lembut di tiap ujung,
+  /// biar terasa seperti "jaga di tempat", bukan gerak mesin yang kaku.
+  double _patrolPhase(double seedOffset) {
+    final t = (_time * 0.6 + seedOffset) % 2.0;
+    final p = t <= 1.0 ? t : 2.0 - t;
+    return Curves.easeInOut.transform(p);
+  }
+
+  Offset _kanapiPosAt(int i) {
+    final a = _kanapiHome[i];
+    final b = _kanapiPartner[i];
+    // Seed beda tiap Kanapi supaya tidak berpatroli serempak.
+    final p = _patrolPhase(i * 0.73);
+    return Offset(a.x + (b.x - a.x) * p, a.y + (b.y - a.y) * p);
+  }
+
+  List<Offset> get _kanapiPositions =>
+      [for (var i = 0; i < _kanapiHome.length; i++) _kanapiPosAt(i)];
+
+  Offset get _holobonVisualPos {
+    final to = _holobonMoveTo;
+    if (_holobonT >= 1 || to == null) {
+      return Offset(_holobonCell.x.toDouble(), _holobonCell.y.toDouble());
+    }
+    return Offset(
+      _holobonCell.x + (to.x - _holobonCell.x) * _holobonT,
+      _holobonCell.y + (to.y - _holobonCell.y) * _holobonT,
+    );
+  }
+
+  /// Dipanggil tiap frame: cek jarak pemain ke tiap Kanapi (peringatan sekali
+  /// + tabrakan -> terpental). Posisinya sendiri murni fungsi dari _time,
+  /// tidak perlu diperbarui di sini.
+  void _updateKanapi() {
+    for (var i = 0; i < _kanapiHome.length; i++) {
+      final p = _kanapiPosAt(i);
+      if (!_kanapiWarned) {
+        final dx = p.dx - _from.x, dy = p.dy - _from.y;
+        if (dx * dx + dy * dy < 2.5 * 2.5) {
+          _kanapiWarned = true;
+          _kunaSay('Awas ada Kanapi!', 3); // K01
+        }
+      }
+      final dx2 = p.dx - _pos.dx, dy2 = p.dy - _pos.dy;
+      if (dx2 * dx2 + dy2 * dy2 < 0.35 * 0.35) {
+        _bounce();
+        return;
+      }
+    }
+  }
+
+  void _stepHolobonToward(Point<int> next) {
+    _holobonMoveTo = next;
+    _holobonT = 0;
+  }
+
+  /// Holobon: patroli dekat pintu keluar, mengejar beberapa sel kalau
+  /// pemain cukup dekat, lalu kembali. Perlu state (bukan fungsi murni dari
+  /// waktu) karena bergantung posisi pemain.
+  void _updateHolobon(double dt) {
+    if (!_hasHolobon) return;
+    final home = _maze.holobonA!;
+
+    if (_holobonT < 1) {
+      _holobonT += dt * _holobonSpeed;
+      if (_holobonT >= 1) {
+        _holobonT = 1;
+        _holobonCell = _holobonMoveTo!;
+      }
+    }
+
+    final hp = _holobonVisualPos;
+    final dx = hp.dx - _pos.dx, dy = hp.dy - _pos.dy;
+    if (dx * dx + dy * dy < 0.35 * 0.35) {
+      _bounce();
+      return;
+    }
+
+    if (_holobonT < 1) return; // masih di tengah satu langkah, tunggu dulu
+
+    switch (_holobonState) {
+      case _HolobonState.idle:
+        final toPlayer = _maze.findPath(_holobonCell, _from);
+        if (toPlayer.isNotEmpty && toPlayer.length <= _holobonDetectRange) {
+          _holobonState = _HolobonState.chasing;
+          _holobonChaseLeft = _holobonChaseMax;
+          if (!_holobonWarned) {
+            _holobonWarned = true;
+            _kunaSay('Hati-hati, ada Holobon!', 3); // K02
+          }
+        } else {
+          final target = _holobonCell == home ? _maze.exit : home;
+          _stepHolobonToward(target);
+        }
+        break;
+      case _HolobonState.chasing:
+        if (_holobonChaseLeft <= 0) {
+          _holobonState = _HolobonState.returning;
+          break;
+        }
+        final path = _maze.findPath(_holobonCell, _from);
+        if (path.isEmpty) {
+          _holobonState = _HolobonState.returning;
+          break;
+        }
+        _holobonChaseLeft--;
+        _stepHolobonToward(path.first);
+        break;
+      case _HolobonState.returning:
+        if (_holobonCell == home) {
+          _holobonState = _HolobonState.idle;
+          _holobonWarned = false; // boleh memperingatkan lagi lain kali
+          break;
+        }
+        final path = _maze.findPath(_holobonCell, home);
+        if (path.isNotEmpty) _stepHolobonToward(path.first);
+        break;
+    }
+  }
+
+  /// Terpental mundur satu sel kena Kanapi/Holobon — tanpa hukuman: bintang
+  /// & progres tidak berkurang, cuma mundur sedikit lalu bisa coba lagi.
+  void _bounce() {
+    if (_bounceCooldown > 0) return;
+    _bounceCooldown = 0.7;
+    SfxPlayer.play(Sfx.bump);
+    _kunaSay('Boing! Tidak apa-apa, coba lagi.', 2); // E03a
+    _held.clear();
+    _to = _prevCell;
+    _t = 0;
+    _moving = true;
+  }
+
   void _setPaused(bool paused) {
     setState(() => _paused = paused);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -151,12 +320,15 @@ class _GameScreenState extends State<GameScreen>
       if (_sayLeft <= 0) _say = '';
     }
 
+    if (_bounceCooldown > 0) _bounceCooldown -= dt;
+
     if (!_won) {
       if (_moving) {
         _t += dt * _speed;
         if (_t >= 1) {
           _t = 1;
           _moving = false;
+          _prevCell = _from;
           _from = _to;
           _arrive();
         }
@@ -172,6 +344,8 @@ class _GameScreenState extends State<GameScreen>
           }
         }
       }
+      _updateKanapi();
+      _updateHolobon(dt);
     }
     if (mounted) setState(() {});
   }
@@ -357,6 +531,8 @@ class _GameScreenState extends State<GameScreen>
                             exitOpen: _allCollected,
                             trail: _trail(),
                             time: _time,
+                            kanapiPos: _kanapiPositions,
+                            holobonPos: _hasHolobon ? _holobonVisualPos : null,
                           ),
                         ),
                       ),

@@ -41,7 +41,17 @@ class Progress {
     return result;
   }
 
-  static const _migrationKey = 'progress_reset_for_stage_lock_v1';
+  static Future<void> _resetAllStars(SharedPreferences p) async {
+    for (final profile in profiles) {
+      for (var w = 0; w < worlds.length; w++) {
+        for (var s = 1; s <= stagesPerWorld; s++) {
+          await p.remove(_key(profile.id, w, s));
+        }
+      }
+    }
+  }
+
+  static const _migrationKeyStageLock = 'progress_reset_for_stage_lock_v1';
 
   /// Hapus semua bintang tersimpan (semua profil), sekali saja. Dipanggil
   /// saat app mulai, karena progres lama (dikumpulkan saat semua stage masih
@@ -50,15 +60,25 @@ class Progress {
   static Future<void> resetOnceForStageLock() async {
     try {
       final p = await SharedPreferences.getInstance();
-      if (p.getBool(_migrationKey) == true) return;
-      for (final profile in profiles) {
-        for (var w = 0; w < worlds.length; w++) {
-          for (var s = 1; s <= stagesPerWorld; s++) {
-            await p.remove(_key(profile.id, w, s));
-          }
-        }
-      }
-      await p.setBool(_migrationKey, true);
+      if (p.getBool(_migrationKeyStageLock) == true) return;
+      await _resetAllStars(p);
+      await p.setBool(_migrationKeyStageLock, true);
+    } catch (_) {
+      // Abaikan: kalau gagal, progres lama tetap ada tapi game tetap jalan.
+    }
+  }
+
+  static const _migrationKeyEnemies = 'progress_reset_for_enemies_v1';
+
+  /// Hapus semua bintang tersimpan sekali saja saat Kanapi/Holobon ditambah
+  /// — permintaan eksplisit supaya progres uji coba lama (sebelum ada
+  /// musuh) tidak ikut terbawa.
+  static Future<void> resetOnceForEnemies() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      if (p.getBool(_migrationKeyEnemies) == true) return;
+      await _resetAllStars(p);
+      await p.setBool(_migrationKeyEnemies, true);
     } catch (_) {
       // Abaikan: kalau gagal, progres lama tetap ada tapi game tetap jalan.
     }

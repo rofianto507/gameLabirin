@@ -81,6 +81,12 @@ Format berkas: `KODE.m4a` (contoh `A01.m4a`). Beri jeda 1 detik sebelum dan sesu
 | J01 | "Kuna tunggu di sini, ya." (jeda) |
 | J02 | "Sudah malam, saatnya istirahat. Sampai besok!" (selesai main) |
 
+## K. Musuh (Kanapi & Holobon)
+| Kode | Kalimat |
+|---|---|
+| K01 | "Awas ada Kanapi!" (peringatan saat anak mendekati Kanapi) |
+| K02 | "Hati-hati, ada Holobon!" (peringatan saat anak mendekati Holobon, stage penutup dunia) |
+
 ## Tips merekam
 - Ruangan sunyi tanpa kipas/AC; lemari berisi baju membantu meredam gema.
 - Mikrofon HP 15-20 cm dari mulut, sedikit di samping agar tidak berdesis.

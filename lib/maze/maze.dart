@@ -16,6 +16,10 @@ class MazeData {
     required this.exit,
     required this.items,
     required this.bonuses,
+    required this.kanapiHome,
+    required this.kanapiPatrol,
+    this.holobonA,
+    this.holobonB,
   });
 
   final int cols;
@@ -29,6 +33,16 @@ class MazeData {
 
   /// Bintang bonus di jalan buntu (opsional, menambah bintang hadiah).
   final List<Point<int>> bonuses;
+
+  /// Kanapi: penjaga kecil, bisa lebih dari satu per stage. Tiap Kanapi ke-i
+  /// patroli bolak-balik antara `kanapiHome[i]` dan `kanapiPatrol[i]`.
+  final List<Point<int>> kanapiHome;
+  final List<Point<int>> kanapiPatrol;
+
+  /// Holobon: boss, hanya ada di stage terakhir tiap dunia, berpatroli
+  /// dekat pintu keluar (null kalau stage ini bukan penutup dunia).
+  final Point<int>? holobonA;
+  final Point<int>? holobonB;
 
   bool canMove(int x, int y, int dir) =>
       (open[y * cols + x] & kBit[dir]) != 0;
@@ -77,6 +91,8 @@ class MazeGenerator {
     int bonusCount = 2,
     double loopChance = 0.10,
     int? seed,
+    int kanapiCount = 1,
+    bool spawnHolobon = false,
   }) {
     final rnd = Random(seed);
     final total = cols * rows;
@@ -188,6 +204,50 @@ class MazeGenerator {
     for (final i in [...deadEnds, ...others]) {
       if (bonuses.length >= bonusCount) break;
       bonuses.add(pt(i));
+      used.add(i);
+    }
+
+    // Kanapi: penjaga kecil, bisa beberapa per stage. Tiap satu patroli
+    // antara satu sel anchor dan satu tetangganya yang terbuka. Dipilih
+    // dari sel yang belum dipakai (bukan start/exit/item/bonus/Kanapi lain)
+    // dan tersebar di sepanjang jalur (bukan cuma dekat start).
+    final kanapiHome = <Point<int>>[];
+    final kanapiPatrol = <Point<int>>[];
+    final freeCells = <int>[for (final i in cand) if (!used.contains(i)) i];
+    for (var k = 0; k < kanapiCount && freeCells.isNotEmpty; k++) {
+      final idx = ((freeCells.length * (k + 1)) / (kanapiCount + 1))
+          .floor()
+          .clamp(0, freeCells.length - 1);
+      final anchor = freeCells[idx];
+      used.add(anchor);
+      freeCells.remove(anchor);
+      var partner = anchor;
+      final ax = anchor % cols;
+      final ay = anchor ~/ cols;
+      for (var d = 0; d < 4; d++) {
+        if ((open[anchor] & kBit[d]) != 0) {
+          partner = (ay + kDy[d]) * cols + (ax + kDx[d]);
+          break;
+        }
+      }
+      kanapiHome.add(pt(anchor));
+      kanapiPatrol.add(pt(partner));
+    }
+
+    // Holobon: boss tunggal, hanya di stage penutup dunia, berpatroli
+    // antara pintu keluar dan satu sel tetangganya.
+    Point<int>? holobonA;
+    Point<int>? holobonB;
+    if (spawnHolobon) {
+      final ex = exitIdx % cols;
+      final ey = exitIdx ~/ cols;
+      for (var d = 0; d < 4; d++) {
+        if ((open[exitIdx] & kBit[d]) != 0) {
+          holobonA = pt((ey + kDy[d]) * cols + (ex + kDx[d]));
+          holobonB = pt(exitIdx);
+          break;
+        }
+      }
     }
 
     return MazeData(
@@ -198,6 +258,10 @@ class MazeGenerator {
       exit: pt(exitIdx),
       items: items,
       bonuses: bonuses,
+      kanapiHome: kanapiHome,
+      kanapiPatrol: kanapiPatrol,
+      holobonA: holobonA,
+      holobonB: holobonB,
     );
   }
 }

@@ -106,8 +106,11 @@ int mazeRows(int stage, {bool easy = false}) {
   return v < 4 ? 4 : v;
 }
 
-/// Jumlah item wajib, naik tiap 2 stage: 2,2,3,3,4,4,5,5,6,6.
+/// Jumlah item wajib: 2,2,3,3,4.
 int itemCountFor(int stage) => 2 + (stage - 1) ~/ 2;
+
+/// Jumlah Kanapi (penjaga kecil) per stage: 1,1,2,2,3.
+int kanapiCountFor(int stage) => 1 + (stage - 1) ~/ 2;
 
 /// Stage harus diselesaikan berurutan: stage pertama dunia pertama selalu
 /// terbuka; stage berikutnya terbuka setelah stage sebelumnya (di dunia yang

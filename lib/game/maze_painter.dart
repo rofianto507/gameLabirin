@@ -172,6 +172,74 @@ void drawKuna(Canvas canvas, Offset c, double cs, double time) {
       c.translate(0, cs * 0.04), cs * 0.05, Paint()..color = const Color(0xFFFFFFFF));
 }
 
+/// Kanapi: penjaga kecil berbentuk bola api, berpatroli di semua stage.
+void drawKanapi(Canvas canvas, Offset c, double cs, double time) {
+  final flicker = sin(time * 10) * cs * 0.025;
+  canvas.drawCircle(
+    c,
+    cs * 0.36,
+    Paint()
+      ..color = const Color(0x55FF7043)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, cs * 0.12),
+  );
+  final body = Path()
+    ..moveTo(c.dx, c.dy - cs * 0.3 + flicker)
+    ..quadraticBezierTo(c.dx + cs * 0.22, c.dy - cs * 0.06, c.dx + cs * 0.16,
+        c.dy + cs * 0.22)
+    ..quadraticBezierTo(
+        c.dx, c.dy + cs * 0.32, c.dx - cs * 0.16, c.dy + cs * 0.22)
+    ..quadraticBezierTo(c.dx - cs * 0.22, c.dy - cs * 0.06, c.dx,
+        c.dy - cs * 0.3 + flicker)
+    ..close();
+  canvas.drawPath(body, Paint()..color = const Color(0xFFFF7043));
+  canvas.drawPath(
+    body,
+    Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = cs * 0.05
+      ..color = _outline,
+  );
+  canvas.drawCircle(c.translate(0, cs * 0.06), cs * 0.13,
+      Paint()..color = const Color(0xFFFFEE58));
+  final eye = Paint()..color = _outline;
+  canvas.drawCircle(c.translate(-cs * 0.06, -cs * 0.01), cs * 0.025, eye);
+  canvas.drawCircle(c.translate(cs * 0.06, -cs * 0.01), cs * 0.025, eye);
+}
+
+/// Holobon: boss berbentuk bola bulu hitam, hanya di stage penutup dunia.
+void drawHolobon(Canvas canvas, Offset c, double cs, double time) {
+  final center = c.translate(0, sin(time * 3) * cs * 0.02);
+  const furColor = Color(0xFF212121);
+  for (var i = 0; i < 10; i++) {
+    final a = (i / 10) * 2 * pi + time * 0.3;
+    final p =
+        center.translate(cos(a) * cs * 0.34, sin(a) * cs * 0.34);
+    canvas.save();
+    canvas.translate(p.dx, p.dy);
+    canvas.rotate(a);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset.zero, width: cs * 0.16, height: cs * 0.3),
+      Paint()..color = furColor,
+    );
+    canvas.restore();
+  }
+  canvas.drawCircle(center, cs * 0.34, Paint()..color = furColor);
+  canvas.drawCircle(
+    center,
+    cs * 0.34,
+    Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = cs * 0.05
+      ..color = _outline,
+  );
+  // Mata besar ramah supaya tidak terlalu menyeramkan buat anak kecil.
+  for (final dx in [-1.0, 1.0]) {
+    final e = center.translate(dx * cs * 0.12, -cs * 0.02);
+    canvas.drawCircle(e, cs * 0.09, Paint()..color = Colors.white);
+    canvas.drawCircle(e, cs * 0.05, Paint()..color = _outline);
+  }
+}
+
 class MazePainter extends CustomPainter {
   MazePainter({
     required this.maze,
@@ -184,6 +252,8 @@ class MazePainter extends CustomPainter {
     required this.exitOpen,
     required this.trail,
     required this.time,
+    required this.kanapiPos,
+    this.holobonPos,
   });
 
   final MazeData maze;
@@ -198,6 +268,12 @@ class MazePainter extends CustomPainter {
   final bool exitOpen;
   final List<Point<int>> trail;
   final double time;
+
+  /// Posisi tiap Kanapi saat ini (satuan sel), selalu ada (minimal 1 per stage).
+  final List<Offset> kanapiPos;
+
+  /// Posisi Holobon saat ini (null kalau stage ini bukan penutup dunia).
+  final Offset? holobonPos;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -292,6 +368,14 @@ class MazePainter extends CustomPainter {
       final bob = sin(time * 3 + i * 1.7) * cs * 0.03;
       drawItem(canvas, world.shape, center(it.x, it.y).translate(0, bob), cs,
           world.itemColor);
+    }
+
+    // Kanapi (penjaga kecil) & Holobon (boss, kalau ada di stage ini).
+    for (final k in kanapiPos) {
+      drawKanapi(canvas, center(k.dx, k.dy), cs, time);
+    }
+    if (holobonPos != null) {
+      drawHolobon(canvas, center(holobonPos!.dx, holobonPos!.dy), cs, time);
     }
 
     // Pemain.

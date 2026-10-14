@@ -32,8 +32,13 @@ kepingan bintang itu.
   karakter yang "hidup" (berkedip, melirik, senyum berubah-ubah saat idle).
 - Progres bintang tersimpan per profil secara lokal (`shared_preferences`).
 - Musik latar dan efek suara (pilih/klik, dapat item, dapat bintang, menang, stage
-  terkunci) — efek suaranya disintesis sendiri, bukan aset pihak ketiga (lihat
+  terkunci, terpental) — efek suaranya disintesis sendiri, bukan aset pihak ketiga (lihat
   `tool/generate_sfx.dart`).
+- **Kanapi** (penjaga kecil berbentuk bola api, beberapa per stage) berpatroli bolak-balik
+  tanpa pernah mengejar, dan **Holobon** (boss berbentuk bola bulu hitam, satu per dunia di
+  stage penutup) berpatroli dekat pintu keluar dan mengejar terbatas beberapa sel kalau
+  didekati. Keduanya cuma bikin terpental ringan kalau tersentuh — tanpa hukuman, bintang/
+  progres tidak berkurang.
 
 ### Belum ada (rencana berikutnya)
 

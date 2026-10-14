@@ -9,6 +9,7 @@ import 'ui/profile_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Progress.resetOnceForStageLock();
+  await Progress.resetOnceForEnemies();
   await _configureAudioMixing();
   await SystemChrome.setPreferredOrientations(const [
     DeviceOrientation.landscapeLeft,

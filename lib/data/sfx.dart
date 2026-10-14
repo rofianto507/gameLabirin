@@ -19,7 +19,10 @@ enum Sfx {
   win('audio/sfx_win.wav'),
 
   /// Stage masih terkunci.
-  locked('audio/sfx_locked.wav');
+  locked('audio/sfx_locked.wav'),
+
+  /// Terpental kena Kanapi/Holobon.
+  bump('audio/sfx_bump.wav');
 
   const Sfx(this.asset);
   final String asset;
