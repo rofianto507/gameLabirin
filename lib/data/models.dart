@@ -24,7 +24,7 @@ const List<PlayerProfile> profiles = [
       id: 'razkahn', name: 'Razkahn', age: 5, color: Color(0xFFE53935)),
 ];
 
-enum ItemShape { egg, crystal, feather }
+enum ItemShape { egg, crystal, feather, shell }
 
 class GameWorld {
   const GameWorld({
@@ -90,6 +90,18 @@ const List<GameWorld> worlds = [
     accent: Color(0xFFFFD54F),
     itemColor: Color(0xFFAB47BC),
     shape: ItemShape.feather,
+  ),
+  GameWorld(
+    id: 'pantai',
+    name: 'Pantai Mutiara',
+    intro: 'Kepiting kecil kehilangan kerangnya. Ayo bantu kumpulkan!',
+    itemName: 'kerang',
+    bg: Color(0xFF4DD0E1),
+    floor: Color(0xFFFFF3D6),
+    wall: Color(0xFF00838F),
+    accent: Color(0xFF26A69A),
+    itemColor: Color(0xFFFF8A65),
+    shape: ItemShape.shell,
   ),
 ];
 

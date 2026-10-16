@@ -8,7 +8,7 @@ jadi tanpa iklan, tanpa IAP, dan tanpa koneksi internet.
 
 ## Cerita singkat
 
-Bintang besar di langit pecah dan kepingannya jatuh ke tiga dunia. **Kuna**, kunang-kunang
+Bintang besar di langit pecah dan kepingannya jatuh ke empat dunia. **Kuna**, kunang-kunang
 penjaga cahaya malam, mengajak pemain menolong penghuni tiap dunia dan mengumpulkan kembali
 kepingan bintang itu.
 
@@ -47,7 +47,7 @@ kepingan bintang itu.
 - Karakter dari foto asli (saat ini masih karakter bola berwarna, lihat
   `docs/panduan_desain_karakter.md`).
 - Mode bermain berdua secara bersamaan (saat ini bergantian).
-- Cerita penutup setelah tiga dunia selesai.
+- Cerita penutup setelah empat dunia selesai.
 
 ## Kontrol
 

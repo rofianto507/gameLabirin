@@ -16,18 +16,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
   @override
-  void initState() {
-    super.initState();
-    // ProfileScreen adalah rute awal (home) Navigator, bukan hasil push
-    // biasa — notifikasi didPush() dari RouteObserver tidak bisa diandalkan
-    // untuk rute pertama ini (widget baru sempat berlangganan di
-    // didChangeDependencies, setelah notifikasi push pertamanya sudah
-    // lewat). Jadi musik dipicu langsung di sini untuk kemunculan pertama;
-    // didPopNext() di bawah tetap menangani saat kembali ke layar ini nanti.
-    BackgroundMusic.restart();
-  }
-
-  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
@@ -38,6 +26,12 @@ class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
     routeObserver.unsubscribe(this);
     super.dispose();
   }
+
+  // Musik diulang dari awal setiap layar ini terlihat (subscribe() langsung
+  // memanggil didPush(), termasuk untuk rute pertama; didPopNext() saat
+  // kembali dari layar lain).
+  @override
+  void didPush() => BackgroundMusic.restart();
 
   @override
   void didPopNext() => BackgroundMusic.restart();

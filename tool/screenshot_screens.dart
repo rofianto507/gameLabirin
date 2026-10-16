@@ -83,6 +83,7 @@ void main() {
 
   testWidgets('screenshot layar pilih stage di beberapa resolusi',
       (tester) async {
+    _mockAudioplayersChannels();
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await _shoot(
       tester,

@@ -35,5 +35,18 @@ void main() {
       expect(isStageUnlocked(tamatDunia0, 1, 2), isFalse,
           reason: 'stage 2 dunia 1 masih perlu stage 1 dunia 1 selesai dulu');
     });
+
+    test('dunia terakhir (Pantai Mutiara) baru terbuka setelah dunia ketiga tamat', () {
+      final lastWorld = worlds.length - 1;
+      expect(worlds[lastWorld].id, 'pantai');
+      final hampir = {
+        for (var s = 1; s < stagesPerWorld; s++) '${lastWorld - 1}_$s': 1,
+      };
+      expect(isStageUnlocked(hampir, lastWorld, 1), isFalse);
+      final tamat = {
+        for (var s = 1; s <= stagesPerWorld; s++) '${lastWorld - 1}_$s': 1,
+      };
+      expect(isStageUnlocked(tamat, lastWorld, 1), isTrue);
+    });
   });
 }

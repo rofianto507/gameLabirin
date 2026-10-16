@@ -36,6 +36,7 @@ Format berkas: `KODE.m4a` (contoh `A01.m4a`). Beri jeda 1 detik sebelum dan sesu
 | C06 | "Ini Desa di Awan! Hati-hati, awannya suka menghilang." |
 | C07 | "Tunggu awannya muncul, baru melangkah." |
 | C08 | "Ada bintang kecil yang jatuh dari langit. Dia ingin pulang." |
+| C09 | "Wah, Pantai Mutiara! Dengar ombaknya. Kepiting kecil kehilangan kerangnya. Yuk, kita bantu cari!" |
 
 ## D. Petunjuk (saat anak buntu)
 | Kode | Kalimat |
@@ -56,7 +57,7 @@ Format berkas: `KODE.m4a` (contoh `A01.m4a`). Beri jeda 1 detik sebelum dan sesu
 "satu", "dua", "tiga", "empat", "lima" ... "sepuluh" (terpisah), plus "Semuanya sudah terkumpul!"
 
 ## G. Nama benda (kosakata)
-"telur", "kristal", "bulu burung", "bintang"
+"telur", "kristal", "bulu burung", "kerang", "bintang"
 
 ## H. Selesai
 | Kode | Kalimat |
@@ -67,6 +68,7 @@ Format berkas: `KODE.m4a` (contoh `A01.m4a`). Beri jeda 1 detik sebelum dan sesu
 | H04 | "Terima kasih! Ini kepingan bintang pertama!" (Hutan) |
 | H05 | "Terima kasih! Ini kepingan bintang kedua!" (Gua) |
 | H06 | "Terima kasih! Ini kepingan bintang ketiga!" (Awan) |
+| H07 | "Terima kasih! Ini kepingan bintang keempat!" (Pantai) |
 
 ## I. Penutup cerita
 | Kode | Kalimat |

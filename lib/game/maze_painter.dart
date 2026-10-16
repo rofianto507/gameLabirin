@@ -84,7 +84,7 @@ Path starPath(Offset c, double r) {
   return p;
 }
 
-/// Menggambar item sesuai bentuk dunia (telur / kristal / bulu).
+/// Menggambar item sesuai bentuk dunia (telur / kristal / bulu / kerang).
 void drawItem(Canvas canvas, ItemShape shape, Offset c, double s, Color color) {
   final fill = Paint()..color = color;
   final line = Paint()
@@ -140,6 +140,37 @@ void drawItem(Canvas canvas, ItemShape shape, Offset c, double s, Color color) {
       canvas.drawOval(oval, line);
       canvas.drawLine(Offset(0, -s * 0.25), Offset(0, s * 0.3), line);
       canvas.restore();
+      break;
+    case ItemShape.shell:
+      // Kerang kipas: tepi atas bergelombang, engsel kecil di bawah.
+      final base = c.translate(0, s * 0.2);
+      final r = s * 0.3;
+      const bumps = 5;
+      Offset edge(double a, double k) =>
+          base.translate(cos(a) * r * k, sin(a) * r * k);
+      double angle(int i) => -pi * 0.9 + (pi * 0.8) * i / bumps;
+      final shell = Path()
+        ..moveTo(base.dx, base.dy)
+        ..lineTo(edge(angle(0), 1).dx, edge(angle(0), 1).dy);
+      for (var i = 0; i < bumps; i++) {
+        final ctrl = edge((angle(i) + angle(i + 1)) / 2, 1.28);
+        final end = edge(angle(i + 1), 1);
+        shell.quadraticBezierTo(ctrl.dx, ctrl.dy, end.dx, end.dy);
+      }
+      shell.close();
+      canvas.drawPath(shell, fill);
+      canvas.drawPath(shell, line);
+      final ridge = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = s * 0.03
+        ..strokeCap = StrokeCap.round
+        ..color = const Color(0x66263238);
+      for (var i = 1; i < bumps; i++) {
+        final p = edge(angle(i), 0.9);
+        canvas.drawLine(base, p, ridge);
+      }
+      canvas.drawCircle(c.translate(-s * 0.08, -s * 0.08), s * 0.035,
+          Paint()..color = const Color(0x88FFFFFF));
       break;
   }
 }
